@@ -2,8 +2,8 @@ version: '3'
 services:
   my-app:
     build:
-      context: .
-      dockerfile: /node.js_project/app/Dockerfile
+      context: ./node.js_project/app/
+      dockerfile: Dockerfile
     image: 885554903941.dkr.ecr.us-east-1.amazonaws.com/my-app:1.0
     ports:
      - 3000:3000
