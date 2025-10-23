@@ -53,7 +53,7 @@ jobs:
 
       # Output final image URL
       - name: Image URL
-        run: echo "✅ Image pushed to: ${{ steps.login-ecr.outputs.registry }}/my-app:1.0"
+        run: echo "✅ Image pushed to:${{ steps.login-ecr.outputs.registry }}/my-app:1.0"
 
       # Save app image as a tar file
       #- name: Save app image to tarball
