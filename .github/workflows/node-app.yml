@@ -1,0 +1,68 @@
+name: node CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      # Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Log in to Amazon ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Build Docker images
+      - name: Build Docker images
+        run: |
+          docker compose build my-app
+
+      # Tag the image for ECR
+      - name: Tag Docker image
+        run: |
+          docker tag my-app:1.0 \
+            ${{ steps.login-ecr.outputs.registry }}/my-app:1.0
+
+      # Push the image to ECR
+      - name: Push image to ECR
+        run: |
+          docker push ${{ steps.login-ecr.outputs.registry }}/my-app:1.0
+
+      # Output final image URL
+      - name: Image URL
+        run: echo "✅ Image pushed to: ${{ steps.login-ecr.outputs.registry }}/my-app:1.0"
+
+      # Save app image as a tar file
+      #- name: Save app image to tarball
+      #  run:  docker save myapp:latest -o myapp-image.tar
+
+      # Upload artifact so it can be downloaded
+      #- name: Upload app Docker image artifact
+      #  uses: actions/upload-artifact@v4
+      #  with:
+      #    name: myapp-docker-image
+      #    path: myapp-image.tar
+      #    retention-days: 7
