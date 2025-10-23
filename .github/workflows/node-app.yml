@@ -38,7 +38,7 @@ jobs:
       # Build Docker images
       - name: Build Docker images
         run: |
-          docker compose -f docker-compose.yml build
+          docker compose -f node.js_project/docker-compose.yml build
 
       # Tag the image for ECR
       - name: Tag Docker image
