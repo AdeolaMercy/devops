@@ -13,4 +13,4 @@ RUN mkdir -p /home/app
 COPY /app /home/app
 
 #run this command as the entrypoint for docker
-CMD["node","/home/app/server.js"]
+CMD["node", "/home/app/server.js"]
