@@ -10,7 +10,7 @@ ENV MONGO_DB_USERNAME=admin \
 RUN mkdir -p /home/app
 
 #copy all the files in /app in the repo to /home/app in the container
-COPY /app /home/app
+COPY /node.js_project/app /home/app
 
 #run this command as the entrypoint for docker
 CMD ["node", "/home/app/server.js"]
