@@ -38,7 +38,7 @@ jobs:
       # Build Docker images
       - name: Build Docker images
         run: |
-          docker compose build my-app
+          docker compose -f docker-compose.yml build -t my-app:1.0
 
       # Tag the image for ECR
       - name: Tag Docker image
