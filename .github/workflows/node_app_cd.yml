@@ -33,5 +33,5 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            docker pull 123456789012.dkr.ecr.us-east-1.amazonaws.com/my-app:1.0
+            docker pull 123456789012.dkr.ecr.us-east-1.amazonaws.com/image:1.0
             docker compose -f /home/ubuntu/docker-compose.yml up -d
