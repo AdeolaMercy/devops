@@ -1,4 +1,4 @@
-name: Deploy to Dev Environment
+name: Release - Deploy to Dev Server
 
 on:
   workflow_dispatch:
@@ -9,10 +9,13 @@ on:
         default: '1.0'
 
 jobs:
-  deploy-dev:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -20,11 +23,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Deploy to ECS Dev Environment
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Deploy via SSH to Dev Server
+        uses: appleboy/ssh-action@v0.1.7
         with:
-          task-definition: ecs/dev-task-def.json
-          service: dev-service
-          cluster: dev-cluster
-          image: 885554903941.dkr.ecr.us-east-1.amazonaws.com/my-app:${{ github.event.inputs.image-tag }}
-          wait-for-service-stability: true
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            docker pull 123456789012.dkr.ecr.us-east-1.amazonaws.com/my-app:${{ github.event.inputs.image-tag }}
+            docker compose -f /home/ubuntu/docker-compose.yml up -d
