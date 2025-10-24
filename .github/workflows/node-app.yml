@@ -38,13 +38,12 @@ jobs:
       # Build Docker images
       - name: Build Docker images
         run: |
-          docker compose -f node.js_project/docker-compose.yml build
+          docker compose -f node.js_project/docker-compose.yml build my-app
 
       # Tag the image for ECR
       - name: Tag Docker image
         run: |
-         docker tag $(docker compose -f node.js_project/docker-compose.yml images -q app) \
-         885554903941.dkr.ecr.us-east-1.amazonaws.com/my-app:1.0
+         docker tag my-app:1.0 885554903941.dkr.ecr.us-east-1.amazonaws.com/my-app:1.0
 
       # Push the image to ECR
        # docker compose -f node.js_project/docker-compose.yml push 
