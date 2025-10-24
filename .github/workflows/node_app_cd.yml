@@ -34,7 +34,6 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           source: "docker-compose.yml"
           target: /home/azureuser/
-          recursive: false
 
       - name: Deploy via SSH to Dev Server
         uses: appleboy/ssh-action@v0.1.7
