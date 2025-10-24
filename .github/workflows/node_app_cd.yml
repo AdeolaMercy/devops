@@ -1,0 +1,30 @@
+name: Deploy to Dev Environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      image-tag:
+        description: 'ECR image tag to deploy'
+        required: true
+        default: '1.0'
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to ECS Dev Environment
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ecs/dev-task-def.json
+          service: dev-service
+          cluster: dev-cluster
+          image: 885554903941.dkr.ecr.us-east-1.amazonaws.com/my-app:${{ github.event.inputs.image-tag }}
+          wait-for-service-stability: true
