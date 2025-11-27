@@ -1,4 +1,4 @@
-name: Release - Deploy to Dev Server
+name: Release - Deploy to Dev Server in Azure
 
 on:
   workflow_dispatch:
