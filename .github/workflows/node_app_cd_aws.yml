@@ -42,14 +42,14 @@ jobs:
              # Log in to ECR
             aws ecr get-login-password --region $AWS_DEFAULT_REGION | \
               docker login --username AWS --password-stdin 885554903941.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+
+            # Stop and remove old containers if they exist
+            #docker rm -f my-app mongo mongo-express || true
             
             #Pull Images 
             docker pull 885554903941.dkr.ecr.us-east-1.amazonaws.com/my-app:${IMAGE_TAG}
             docker pull mongo
             docker pull mongo-express
-
-            # Stop and remove old containers if they exist
-            docker rm -f my-app mongo mongo-express || true
 
             # Run MongoDB
             docker run -d \
