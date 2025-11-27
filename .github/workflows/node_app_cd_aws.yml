@@ -1,0 +1,77 @@
+name: Release - Deploy to Dev Server in AWS
+
+on:
+  workflow_dispatch:
+    inputs:
+      image-tag:
+        description: 'ECR image tag to deploy'
+        required: true
+        default: '1.0'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      #Need to authenticate to AWS to pull images in ECR private repo
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+  
+      - name: Deploy via SSH to Dev Server
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.AWS_SERVER_IP }}
+          username: ${{ secrets.AWS_SERVER_USER }}
+          key: ${{ secrets.AWS_SERVER_SSH_KEY }}
+          script: |
+            # Configure AWS CLI on the server with IAM user credentials
+            export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+            export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            export AWS_DEFAULT_REGION=${{ secrets.AWS_REGION }}
+
+             # Log in to ECR
+            aws ecr get-login-password --region $AWS_DEFAULT_REGION | \
+              docker login --username AWS --password-stdin 885554903941.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+            
+            #Pull Images 
+            docker pull 885554903941.dkr.ecr.us-east-1.amazonaws.com/my-app:1.0
+            docker pull mongo
+            docker pull mongo-express
+
+            # Stop and remove old containers if they exist
+            docker rm -f my-app mongo mongo-express || true
+
+            # Run MongoDB
+            docker run -d \
+              --name mongo \
+              -e MONGO_INITDB_ROOT_USERNAME=${{ secrets.MONGO_USERNAME }} \
+              -e MONGO_INITDB_ROOT_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
+              -p 27017:27017 \
+              -v mongo-data:/data/db \
+              mongo
+
+            # Run Mongo Express
+            docker run -d \
+              --name mongo-express \
+              --link mongo:mongo \
+              -p 8081:8081 \
+              -e ME_CONFIG_MONGODB_ADMINUSERNAME=${{ secrets.MONGO_USERNAME }} \
+              -e ME_CONFIG_MONGODB_ADMINPASSWORD=${{ secrets.MONGO_PASSWORD }} \
+              mongo-express
+
+            # Run your Node.js app
+            docker run -d \
+              --name my-app \
+              --link mongo:mongo \
+              -p 3000:3000 \
+              885554903941.dkr.ecr.us-east-1.amazonaws.com/my-app:${IMAGE_TAG}
