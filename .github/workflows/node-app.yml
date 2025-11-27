@@ -59,7 +59,7 @@ jobs:
        # docker compose -f node.js_project/docker-compose.yml push
       - name: Push image to ECR
         run: |
-          docker push ${{ steps.login-ecr.outputs.registry }}/my-app
+          docker compose -f node.js_project/docker-compose.yml push
         env:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
 
