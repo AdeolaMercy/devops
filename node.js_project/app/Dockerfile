@@ -3,8 +3,8 @@
 FROM node:13-alpine
 
 #Set environment variables
-ENV MONGO_DB_USERNAME=admin \
-    MONGO_DB_PASSWORD=password1
+ENV MONGO_DB_USERNAME={{ secrets.MONGO_USERNAME }} \
+    MONGO_DB_PASSWORD={{ secrets.MONGO_PASSWORD }}
 
 #run command to create directory in the container
 RUN mkdir -p /home/app
