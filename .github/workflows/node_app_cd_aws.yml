@@ -44,7 +44,7 @@ jobs:
               docker login --username AWS --password-stdin 885554903941.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
             
             #Pull Images 
-            docker pull 885554903941.dkr.ecr.us-east-1.amazonaws.com/my-app:1.0
+            docker pull 885554903941.dkr.ecr.us-east-1.amazonaws.com/my-app:${IMAGE_TAG}
             docker pull mongo
             docker pull mongo-express
 
