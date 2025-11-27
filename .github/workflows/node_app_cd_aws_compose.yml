@@ -1,0 +1,61 @@
+name: Release - Deploy to Dev Server in AWS using Docker-Compose
+
+on:
+  workflow_dispatch:
+    inputs:
+      image-tag:
+        description: 'ECR image tag to deploy'
+        required: true
+        default: '1.0'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Move docker-compose.yml to workspace root
+        run: cp node.js_project/docker-compose.yml ./docker-compose.yml
+  
+      - name: Copy docker-compose.yml to server
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.AWS_SERVER_IP }}
+          username: ${{ secrets.AWS_SERVER_USER }}
+          key: ${{ secrets.AWS_SERVER_SSH_KEY }}
+          source: "docker-compose.yml"
+          target: "/home/{{ secrets.AWS_SERVER_USER }}/"
+
+      - name: Deploy via SSH to Dev Server
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.AWS_SERVER_IP }}
+          username: ${{ secrets.AWS_SERVER_USER }}
+          key: ${{ secrets.AWS_SERVER_SSH_KEY }}
+          script: |
+            # Configure AWS CLI on the server with IAM user credentials
+            export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+            export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            export AWS_DEFAULT_REGION=${{ secrets.AWS_REGION }}
+            export MONGO_USERNAME="${{ secrets.MONGO_USERNAME }}"
+            export MONGO_PASSWORD="${{ secrets.MONGO_PASSWORD }}"
+            export IMAGE_TAG="${{ inputs.image-tag }}" 
+
+             # Log in to ECR
+            aws ecr get-login-password --region $AWS_DEFAULT_REGION | \
+              docker login --username AWS --password-stdin 885554903941.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+              
+            docker pull 885554903941.dkr.ecr.us-east-1.amazonaws.com/my-app:${IMAGE_TAG}
+            docker compose -f /home/{{ secrets.AWS_SERVER_USER }}/docker-compose.yml up -d
