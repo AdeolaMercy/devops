@@ -68,7 +68,7 @@ jobs:
               -p 8081:8081 \
               -e ME_CONFIG_MONGODB_ADMINUSERNAME=${{ secrets.MONGO_USERNAME }} \
               -e ME_CONFIG_MONGODB_ADMINPASSWORD=${{ secrets.MONGO_PASSWORD }} \
-              -e ME_CONFIG_MONGODB_SERVER=mongo
+              -e ME_CONFIG_MONGODB_SERVER=mongo \
               mongo-express
 
             # Run your Node.js app
