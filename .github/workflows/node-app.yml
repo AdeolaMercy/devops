@@ -48,7 +48,7 @@ jobs:
       # Build Docker images
       - name: Build Docker images
         run: |
-          docker compose -f node.js_project/docker-compose.yml build my-app:${IMAGE_TAG}
+          docker compose -f node.js_project/docker-compose.yml build my-app
         env: 
           MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
           MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
