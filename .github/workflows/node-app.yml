@@ -37,21 +37,16 @@ jobs:
 
       # needed to tag image
       - name: Set IMAGE_TAG
-        id: vars
-        run: |
-          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-            echo "IMAGE_TAG=${GITHUB_REF_NAME}" >> $GITHUB_ENV
-          else
-            echo "IMAGE_TAG=1.0.${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
-          fi
-   
-      # Build Docker images
+        run: echo "IMAGE_TAG=1.0.${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
+          
+       # Build Docker images
       - name: Build Docker images
         run: |
           docker compose -f node.js_project/docker-compose.yml build my-app
         env: 
           MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
           MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
      
       # Tag the image for ECR
       #- name: Tag Docker image
@@ -63,7 +58,7 @@ jobs:
        # docker compose -f node.js_project/docker-compose.yml push
       - name: Push image to ECR
         run: |
-          docker tag my-app ${{ steps.login-ecr.outputs.registry }}/my-app:${IMAGE_TAG}
+          docker tag my-app:${IMAGE_TAG} ${{ steps.login-ecr.outputs.registry }}/my-app:${IMAGE_TAG}
           docker push ${{ steps.login-ecr.outputs.registry }}/my-app:${IMAGE_TAG}
           
 
