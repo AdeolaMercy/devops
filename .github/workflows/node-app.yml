@@ -35,14 +35,6 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # Build Docker images
-      - name: Build Docker images
-        run: |
-          docker compose -f node.js_project/docker-compose.yml build my-app
-        env: 
-          MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
-          MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
-     
       # needed to tag image
       - name: Set IMAGE_TAG
         id: vars
@@ -52,8 +44,15 @@ jobs:
           else
             echo "IMAGE_TAG=1.0.${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
           fi
-
-
+   
+      # Build Docker images
+      - name: Build Docker images
+        run: |
+          docker compose -f node.js_project/docker-compose.yml build my-app:${IMAGE_TAG}
+        env: 
+          MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
+          MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+     
       # Tag the image for ECR
       #- name: Tag Docker image
        # run: |
@@ -71,10 +70,6 @@ jobs:
       # Output final image URL
       - name: Image URL
         run: echo "✅ Image pushed to:${{ steps.login-ecr.outputs.registry }}/my-app:${IMAGE_TAG}"
-
-      # Save app image as a tar file
-      #- name: Save app image to tarball
-      #  run:  docker save myapp:latest -o myapp-image.tar
 
       # Upload artifact so it can be downloaded
       #- name: Upload app Docker image artifact
