@@ -36,7 +36,7 @@ jobs:
           username: ${{ secrets.AWS_SERVER_USER }}
           key: ${{ secrets.AWS_SERVER_SSH_KEY }}
           source: "docker-compose.yml"
-          target: "/home/ubuntu/"
+          target: "/home/${{ secrets.AWS_SERVER_USER }}/"
 
       - name: Deploy via SSH to Dev Server
         uses: appleboy/ssh-action@v0.1.7
@@ -58,4 +58,4 @@ jobs:
               docker login --username AWS --password-stdin 885554903941.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
               
             docker pull 885554903941.dkr.ecr.us-east-1.amazonaws.com/my-app:${IMAGE_TAG}
-            docker compose -f /home/{{ secrets.AWS_SERVER_USER }}/docker-compose.yml up -d
+            docker compose -f /home/${{ secrets.AWS_SERVER_USER }}/docker-compose.yml up -d
